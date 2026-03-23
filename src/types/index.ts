@@ -9,8 +9,6 @@ export interface IApi {
   ): Promise<T>;
 }
 
-// type TCategory = "софт-скил" | "другое" | "дополнительное" | "кнопка" | "хард-скил"
-
 export interface IProduct {
   id: string;
   description: string;
@@ -29,17 +27,9 @@ export interface IBuyer {
   address: string;
 }
 
-export interface IBuyerErrors {
-  email?: string;
-  phone?: string;
-  address?: string;
-}
+export type TBuyerErrors = Partial<Record<keyof IBuyer, string>>
 
-export interface IOrderRequest {
-  payment: TPayment;
-  email: string;
-  phone: string;
-  address: string;
+export interface IOrderRequest extends IBuyer {
   total: number;
   items: string[];
 }
@@ -50,6 +40,6 @@ export interface IOrderResponse {
 }
 
 export interface IProductsResponse {
-    total: number;
-    items: IProduct[];
+  total: number;
+  items: IProduct[];
 }

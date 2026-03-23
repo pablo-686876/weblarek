@@ -3,8 +3,8 @@ import { IProduct } from "../../types/index";
 export class Cart {
   private items: IProduct[];
 
-  constructor(items: IProduct[] = []) {
-    this.items = items;
+  constructor() {
+    this.items = [];
   }
   getCartList(): IProduct[] {
     return this.items;
@@ -15,10 +15,9 @@ export class Cart {
     }
   }
   deleteProduct(item: IProduct): void {
-    const deleteItem = this.items.find((elem) => elem.id === item.id) || null;
-    if (deleteItem) {
-      const index = this.items.indexOf(deleteItem);
-      this.items.splice(index, 1);
+    const deleteItemIndex = this.items.findIndex((elem) => elem.id === item.id);
+    if (deleteItemIndex !== -1) {
+      this.items.splice(deleteItemIndex, 1);
     }
   }
   clearCart(): void {
@@ -31,10 +30,6 @@ export class Cart {
     return this.items.length;
   }
   isCartProductById(id: string): boolean {
-    const item = this.items.find((elem) => elem.id === id) || null;
-    if (item) {
-      return this.items.includes(item);
-    }
-    return false;
+    return this.items.some((item) => item.id === id);
   }
 }

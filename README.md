@@ -103,6 +103,8 @@ Presenter - презентер содержит основную логику п
 Для приложения можно выделить две сущности, которые хранят данные - "Продукт" и "Покупатель". Для каждой сущности был создан свой интерфейс.
 
 #### Интерфейс IProduct
+Интерфейс будет хранить данные о товаре из каталога, предоставленного сервером. Поля данных заранее определены.
+
 Для сущности "Продукт" были выделены следующие поля:
 ```
 interface IProduct {
@@ -115,6 +117,8 @@ interface IProduct {
 } 
 ```
 #### Интерфейс IBuyer
+Интерфейс будет хранить данные о покупателе, который регистрирует заказ на сайте. Поля данных заранее определены.
+
 Для сущности "Покупатель" были выделены следующие поля:
 ```
 interface IBuyer {
@@ -124,66 +128,11 @@ interface IBuyer {
   address: string;
 } 
 ```
-#### Интерфейс IBuyerErrors
-Также был создан отдельный интерфейс для обработки ошибок валидации формы.
-```
-interface IBuyerErrors {
-  email?: string;
-  phone?: string;
-  address?: string;
-}
-```
-#### Тип TPayment
-Специальный тип для поля "Тип оплаты". Может иметь только три значения - пустая строка, `cash` или `card`. 
-```
-export type TPayment = "card" | "cash" | "";
-```
-
-#### Интерфейс IOrderRequest
-Описывает тип объекта, передаваемого на сервер с помощью метода post.
-```
-interface IOrderRequest {
-  payment: TPayment;
-  email: string;
-  phone: string;
-  address: string;
-  total: number;
-  items: [];
-}
-```
-#### Интерфейс IOrderResponse
-Описывает тип объекта, передаваемого сервервером при успешном выполнении метода post.
-```
-interface IOrderResponse {
-  id: string;
-  total: number;
-}
-```
-#### Интерфейс IProductsResponse
-Описывает тип объекта, передаваемого сервервером при успешном выполнении метода get.
-```
-interface IProductsResponse {
-    total: number;
-    items: IProduct[];
-}
-```
-#### Интерфейс IApi
-Описывает модель используемго api, обладает методами `get` и `post`.
-```
-export interface IApi {
-  get<T extends object>(uri: string): Promise<T>;
-  post<T extends object>(
-    uri: string,
-    data: object,
-    method?: ApiPostMethods,
-  ): Promise<T>;
-}
-```
 
 ### Модели данных
 #### Класс ProductCatalog
 Конструктор:
-`constructor(items: IProduct[], current_item: IProduct)` - принимает массив со всеми товарами и товар, выбранный для подробного просмотра на данный момент.
+`constructor()` - пустой конструктор, данные в класс попадают через методы класса.
 
 Поля класса:
 
@@ -197,7 +146,7 @@ export interface IApi {
 
 `getProducts(): IProduct[]` - получение массива товаров;
 
-`getProductbyId(id: string): IProduct` - получение товара по id;
+`getProductbyId(id: string): IProduct | undefined` - получение товара по id, если он имеется в каталоге;
 
 `setCurrentProduct(item: IProduct): void` - сохранение товара для подробного отображения;
 
@@ -207,8 +156,7 @@ export interface IApi {
 
 Конструктор:
 
-`constructor(items: IProduct[])` - принимает массив всех товаров, добавенных в корзину.
-
+`constructor()` - пустой конструктор, данные в класс попадают через методы класса.
 
 Поля класса:
 
@@ -235,7 +183,7 @@ export interface IApi {
 
 Конструктор:
 
-`constructor(payment: TPayment, email: string, phone: string, address: string)` - принимает данные покупателя и тип оплаты при создании заказа.
+`constructor()` - пустой конструктор, данные в класс попадают через методы класса.
 
 Поля класса:
 
@@ -255,20 +203,22 @@ export interface IApi {
 
 `clearBuyerData(): void` - очистка всех полей данных покупателя;
 
+`validatePayment(payment: TPayment): boolean`- функция проверки валидации поля `payment`;
+
 `validateEmail(email: string): boolean` - функция проверки валидации поля `email`;
 
 `validatePhone(phone: string): boolean` - функция проверки валидации поля `phone`;
 
 `validateAddress(address: string): boolean` - функция проверки валидации поля `address`;
 
-`validateBuyerData(): { isValid: boolean; errors: IBuyerErrors }` - валидация данных полей покупателя. Возвращает `boolean` значение `true/false`, в зависимости от того, есть ли ошибки в заполненной форме. Также возвращает список ошибок `errors`, если они есть.
+`validateBuyerData(): TBuyerErrors` - валидация данных полей покупателя. Возвращает список ошибок `errors`, если они есть.
 
 ### Слой коммуникации
 
 #### Класс WebApi
 Конструктор:
 
-`constructor(api: IApi) {this.api = api;}` - принимает объект, соответсвующий интерфейсу `IApi`.
+`constructor(api: IApi)` - принимает объект, соответсвующий интерфейсу `IApi`.
 
 Поля класса:
 

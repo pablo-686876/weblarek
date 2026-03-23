@@ -4,9 +4,9 @@ export class ProductCatalog {
   private items: IProduct[];
   private current_item: IProduct | null;
 
-  constructor(items: IProduct[] = [], current_item: IProduct | null = null) {
-    this.items = items;
-    this.current_item = current_item;
+  constructor() {
+    this.items = [];
+    this.current_item = null;
   }
   setProducts(items: IProduct[]): void {
     this.items = items;
@@ -14,9 +14,8 @@ export class ProductCatalog {
   getProducts(): IProduct[] {
     return this.items;
   }
-  getProductbyId(id: string): IProduct | null {
-    // если item - undefined, значит вернет null, т.к. undefined проверяется первым
-    return this.items.find((item) => item.id === id) || null;
+  getProductbyId(id: string): IProduct | undefined {
+    return this.items.find((item) => item.id === id);
   }
   setCurrentProduct(item: IProduct): void {
     this.current_item = item;

@@ -1,20 +1,15 @@
-import { IBuyer, TPayment, IBuyerErrors} from "../../types/index";
+import { IBuyer, TPayment, TBuyerErrors} from "../../types/index";
 
 export class Buyer {
   private payment: TPayment;
   private email: string;
   private phone: string;
   private address: string;
-  constructor(
-    payment: TPayment = "",
-    email: string = "",
-    phone: string = "",
-    address: string = "",
-  ) {
-    this.payment = payment;
-    this.email = email;
-    this.phone = phone;
-    this.address = address;
+  constructor() {
+    this.payment = "";
+    this.email = "";
+    this.phone = "";
+    this.address = "";
   }
   getBuyerData(): IBuyer {
     return {
@@ -25,10 +20,10 @@ export class Buyer {
     };
   }
   clearBuyerData(): void {
-    ((this.payment = ""),
-      (this.email = ""),
-      (this.phone = ""),
-      (this.address = ""));
+    this.payment = "",
+    this.email = "",
+    this.phone = "",
+    this.address = "";
   }
 
   setBuyerData(buyer: IBuyer): void {
@@ -46,34 +41,48 @@ export class Buyer {
     }
   }
 
+  validatePayment(payment: TPayment): boolean {
+    if (payment !== "") {
+      return true;
+    }
+    return false;
+  }
+
   validateEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    if (email.length > 0) {
+      return true;
+    }
+    return false;
   }
+
   validatePhone(phone: string): boolean {
-    const phoneRegex = /^\+7\d{10}$/;
-    return phoneRegex.test(phone);
+    if (phone.length > 0) {
+      return true;
+    }
+    return false;
   }
+
   validateAddress(address: string): boolean {
     if (address.length > 0) {
-        return true
+      return true;
     }
-    return false
+    return false;
   }
-  validateBuyerData(): {isValid: boolean, errors: IBuyerErrors} {
-    const errors: IBuyerErrors = {};
+
+  validateBuyerData(): TBuyerErrors {
+    const errors: TBuyerErrors = {};
+    if (!this.validatePayment(this.payment)) {
+      errors.payment = "Не выбран тип оплаты";
+    }
     if (!this.validateEmail(this.email)) {
-        errors.email = "Некорректный email"
+      errors.email = "Некорректный email";
     }
     if (!this.validatePhone(this.phone)) {
-        errors.phone = "Некорректный номер телефона"
+      errors.phone = "Некорректный номер телефона";
     }
     if (!this.validateAddress(this.address)) {
-        errors.address = "Некорректный адрес"
+      errors.address = "Некорректный адрес";
     }
-    return {
-        isValid: Object.keys(errors).length === 0,
-        errors
-    }
+    return errors;
   }
 }
