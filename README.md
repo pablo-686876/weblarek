@@ -98,3 +98,184 @@ Presenter - презентер содержит основную логику п
 `emit<T extends object>(event: string, data?: T): void` - инициализация события. При вызове события в метод передается название события и объект с данными, который будет использован как аргумент для вызова обработчика.  
 `trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void` - возвращает функцию, при вызове которой инициализируется требуемое в параметрах событие с передачей в него данных из второго параметра.
 
+### Данные
+
+Для приложения можно выделить две сущности, которые хранят данные - "Продукт" и "Покупатель". Для каждой сущности был создан свой интерфейс.
+
+#### Интерфейс IProduct
+Для сущности "Продукт" были выделены следующие поля:
+```
+interface IProduct {
+  id: string;
+  description: string;
+  image: string;
+  title: string;
+  category: string;
+  price: number | null;
+} 
+```
+#### Интерфейс IBuyer
+Для сущности "Покупатель" были выделены следующие поля:
+```
+interface IBuyer {
+  payment: TPayment;
+  email: string;
+  phone: string;
+  address: string;
+} 
+```
+#### Интерфейс IBuyerErrors
+Также был создан отдельный интерфейс для обработки ошибок валидации формы.
+```
+interface IBuyerErrors {
+  email?: string;
+  phone?: string;
+  address?: string;
+}
+```
+#### Тип TPayment
+Специальный тип для поля "Тип оплаты". Может иметь только три значения - пустая строка, `cash` или `card`. 
+```
+export type TPayment = "card" | "cash" | "";
+```
+
+#### Интерфейс IOrderRequest
+Описывает тип объекта, передаваемого на сервер с помощью метода post.
+```
+interface IOrderRequest {
+  payment: TPayment;
+  email: string;
+  phone: string;
+  address: string;
+  total: number;
+  items: [];
+}
+```
+#### Интерфейс IOrderResponse
+Описывает тип объекта, передаваемого сервервером при успешном выполнении метода post.
+```
+interface IOrderResponse {
+  id: string;
+  total: number;
+}
+```
+#### Интерфейс IProductsResponse
+Описывает тип объекта, передаваемого сервервером при успешном выполнении метода get.
+```
+interface IProductsResponse {
+    total: number;
+    items: IProduct[];
+}
+```
+#### Интерфейс IApi
+Описывает модель используемго api, обладает методами `get` и `post`.
+```
+export interface IApi {
+  get<T extends object>(uri: string): Promise<T>;
+  post<T extends object>(
+    uri: string,
+    data: object,
+    method?: ApiPostMethods,
+  ): Promise<T>;
+}
+```
+
+### Модели данных
+#### Класс ProductCatalog
+Конструктор:
+`constructor(items: IProduct[], current_item: IProduct)` - принимает массив со всеми товарами и товар, выбранный для подробного просмотра на данный момент.
+
+Поля класса:
+
+`items: IProduct[]` - массив всех товаров;
+
+`current_item: IProduct` - товар, выбранный для подробного отображения.
+
+Методы класса:
+
+`setProducts(items: IProduct[]): void` - сохранение массива товаров, полученного с сервера;
+
+`getProducts(): IProduct[]` - получение массива товаров;
+
+`getProductbyId(id: string): IProduct` - получение товара по id;
+
+`setCurrentProduct(item: IProduct): void` - сохранение товара для подробного отображения;
+
+`getCurrentProduct(): IProduct | null` - получение товара для подробного отображения.
+
+#### Класс Cart
+
+Конструктор:
+
+`constructor(items: IProduct[])` - принимает массив всех товаров, добавенных в корзину.
+
+
+Поля класса:
+
+`items: IProduct[]` - массив всех товаров в корзине.
+
+Методы класса:
+
+`getCartList(): IProduct[]` - получение массива товаров из корзины;
+
+`addProduct(item: IProduct): void` - добавление товара в корзину;
+
+`deleteProduct(item: IProduct): void` - удаление товара из корзины;
+
+`clearCart(): void` - удаление всех товаров из корзины;
+
+`getCartSum(): number` - получение суммы всех товаров из корзины;
+
+`getCartProductCount(): number` - получение количества товаров в корзине;
+
+`isCartProductById(id: string): boolean` - проверка наличия товара в корзине по id.
+
+
+#### Класс Buyer
+
+Конструктор:
+
+`constructor(payment: TPayment, email: string, phone: string, address: string)` - принимает данные покупателя и тип оплаты при создании заказа.
+
+Поля класса:
+
+`payment: TPayment` - тип оплаты;
+
+`email: string` - почта;
+
+`phone: string` - телефон;
+
+`address: string` - адрес.
+
+Методы класса:
+
+`setBuyerData(buyer: IBuyer): void` - сохранение данных покупателя из формы в модель;
+
+`getBuyerData(): IBuyer` - получение всех полей данных покупателя;
+
+`clearBuyerData(): void` - очистка всех полей данных покупателя;
+
+`validateEmail(email: string): boolean` - функция проверки валидации поля `email`;
+
+`validatePhone(phone: string): boolean` - функция проверки валидации поля `phone`;
+
+`validateAddress(address: string): boolean` - функция проверки валидации поля `address`;
+
+`validateBuyerData(): { isValid: boolean; errors: IBuyerErrors }` - валидация данных полей покупателя. Возвращает `boolean` значение `true/false`, в зависимости от того, есть ли ошибки в заполненной форме. Также возвращает список ошибок `errors`, если они есть.
+
+### Слой коммуникации
+
+#### Класс WebApi
+Конструктор:
+
+`constructor(api: IApi) {this.api = api;}` - принимает объект, соответсвующий интерфейсу `IApi`.
+
+Поля класса:
+
+`api: IApi` - используемое api, соответсвующее интерфейсу `IApi`.
+
+Методы класса:
+
+`async getProductList(): Promise<IProduct[]>` - возвращает массив товаров с сервера, соответсвующий интерфейсу `IProduct`;
+
+`async postOrder(data: IOrderRequest): Promise<IOrderResponse>` - создает заказ, данные берутся из `IOrderRequest`, ответ сервера соответсвует интерфейсу `IOrderResponse`.
