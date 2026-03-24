@@ -203,14 +203,6 @@ interface IBuyer {
 
 `clearBuyerData(): void` - очистка всех полей данных покупателя;
 
-`validatePayment(payment: TPayment): boolean`- функция проверки валидации поля `payment`;
-
-`validateEmail(email: string): boolean` - функция проверки валидации поля `email`;
-
-`validatePhone(phone: string): boolean` - функция проверки валидации поля `phone`;
-
-`validateAddress(address: string): boolean` - функция проверки валидации поля `address`;
-
 `validateBuyerData(): TBuyerErrors` - валидация данных полей покупателя. Возвращает список ошибок `errors`, если они есть.
 
 ### Слой коммуникации

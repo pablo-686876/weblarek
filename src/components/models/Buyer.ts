@@ -41,46 +41,18 @@ export class Buyer {
     }
   }
 
-  validatePayment(payment: TPayment): boolean {
-    if (payment !== "") {
-      return true;
-    }
-    return false;
-  }
-
-  validateEmail(email: string): boolean {
-    if (email.length > 0) {
-      return true;
-    }
-    return false;
-  }
-
-  validatePhone(phone: string): boolean {
-    if (phone.length > 0) {
-      return true;
-    }
-    return false;
-  }
-
-  validateAddress(address: string): boolean {
-    if (address.length > 0) {
-      return true;
-    }
-    return false;
-  }
-
   validateBuyerData(): TBuyerErrors {
     const errors: TBuyerErrors = {};
-    if (!this.validatePayment(this.payment)) {
+    if (!this.payment) {
       errors.payment = "Не выбран тип оплаты";
     }
-    if (!this.validateEmail(this.email)) {
+    if (!this.email) {
       errors.email = "Некорректный email";
     }
-    if (!this.validatePhone(this.phone)) {
+    if (!this.phone) {
       errors.phone = "Некорректный номер телефона";
     }
-    if (!this.validateAddress(this.address)) {
+    if (!this.address) {
       errors.address = "Некорректный адрес";
     }
     return errors;
