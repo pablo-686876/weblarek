@@ -27,7 +27,7 @@ export interface IBuyer {
   address: string;
 }
 
-export type TBuyerErrors = Partial<Record<keyof IBuyer, string>>
+export type TBuyerErrors = Partial<Record<keyof IBuyer, string>>;
 
 export interface IOrderRequest extends IBuyer {
   total: number;
@@ -42,4 +42,9 @@ export interface IOrderResponse {
 export interface IProductsResponse {
   total: number;
   items: IProduct[];
+}
+
+// слой "представление"
+export interface ICardActions {
+  onClick?: () => void;
 }

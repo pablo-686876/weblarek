@@ -1,10 +1,13 @@
 import { IProduct } from "../../types/index";
+import { IEvents } from "../base/Events";
 
-export class Cart {
+export class Basket {
   private items: IProduct[];
+  private events: IEvents;
 
-  constructor() {
+  constructor(events: IEvents) {
     this.items = [];
+    this.events = events;
   }
   getCartList(): IProduct[] {
     return this.items;
@@ -12,12 +15,14 @@ export class Cart {
   addProduct(item: IProduct): void {
     if (!this.items.includes(item)) {
       this.items.push(item);
+      this.events.emit("model-basket:change-cart")
     }
   }
   deleteProduct(item: IProduct): void {
     const deleteItemIndex = this.items.findIndex((elem) => elem.id === item.id);
     if (deleteItemIndex !== -1) {
       this.items.splice(deleteItemIndex, 1);
+      this.events.emit("model-basket:change-cart")
     }
   }
   clearCart(): void {

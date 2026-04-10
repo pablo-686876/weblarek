@@ -26,7 +26,7 @@ export class Buyer {
     this.address = "";
   }
 
-  setBuyerData(buyer: IBuyer): void {
+  setBuyerData(buyer: Partial<IBuyer>): void {
     if (buyer.payment !== undefined) {
       this.payment = buyer.payment;
     }
@@ -41,18 +41,20 @@ export class Buyer {
     }
   }
 
-  validateBuyerData(): TBuyerErrors {
+  validateBuyerData(fields?: (keyof TBuyerErrors)[]): TBuyerErrors {
     const errors: TBuyerErrors = {};
-    if (!this.payment) {
+    const validateFields = fields || ['payment', 'address', 'email', 'phone'];
+
+    if (validateFields.includes('payment') && !this.payment) {
       errors.payment = "Не выбран тип оплаты";
     }
-    if (!this.email) {
+    if (validateFields.includes('email') && !this.email) {
       errors.email = "Некорректный email";
     }
-    if (!this.phone) {
+    if (validateFields.includes('phone') && !this.phone) {
       errors.phone = "Некорректный номер телефона";
     }
-    if (!this.address) {
+    if (validateFields.includes('address') && !this.address) {
       errors.address = "Некорректный адрес";
     }
     return errors;

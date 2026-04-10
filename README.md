@@ -129,7 +129,8 @@ interface IBuyer {
 } 
 ```
 
-### Модели данных
+### Слой моделей - Model
+
 #### Класс ProductCatalog
 Конструктор:
 `constructor()` - пустой конструктор, данные в класс попадают через методы класса.
@@ -205,7 +206,7 @@ interface IBuyer {
 
 `validateBuyerData(): TBuyerErrors` - валидация данных полей покупателя. Возвращает список ошибок `errors`, если они есть.
 
-### Слой коммуникации
+### Слой коммуникации - Api
 
 #### Класс WebApi
 Конструктор:
@@ -221,3 +222,241 @@ interface IBuyer {
 `async getProductList(): Promise<IProduct[]>` - возвращает массив товаров с сервера, соответсвующий интерфейсу `IProduct`;
 
 `async postOrder(data: IOrderRequest): Promise<IOrderResponse>` - создает заказ, данные берутся из `IOrderRequest`, ответ сервера соответсвует интерфейсу `IOrderResponse`.
+
+### Слой представления - View
+
+Все классы представления будут наследоваться от класса Component, содержащего метод `render`, с помощью которого будет строиться отображения всех компонентов приложения.
+
+#### Класс Header
+Конструктор:
+`constructor(container: HTMLElement, private events: IEvents)` - конструктор принимает контейнер `HTMLElement`, блок разметки компонента, и экземпляр интерфейса `IEvents`, реализующий методы описания событий.
+
+Поля класса:
+
+`basketCounter: HTMLElement` - показатель количества товаров корзины;
+
+`basketButton: HTMLButtonElement` - кнопка открытия корзины.
+
+Методы класса:
+
+`set counter(value: number)` - сеттер сохранения значения `value` в `basketCounter`;
+
+#### Класс BasketView
+Конструктор:
+`constructor(container: HTMLElement, private events: IEvents)` - конструктор принимает контейнер `HTMLElement`, блок разметки компонента, и экземпляр интерфейса `IEvents`, реализующий методы описания событий.
+
+Поля класса:
+
+`totalPrice: HTMLElement` - показатель общей суммы товаров корзины;
+
+`emptyElement: HTMLElement` - пустой блок, используется в случае отсутствия товаров в корзине;
+
+`orderButton: HTMLButtonElement` - кнопка оформления заказа;
+
+`basketList: HTMLElement` - блок списка товаров корзины.
+
+Методы класса:
+
+`set items(items: HTMLElement[])` - сеттер сохранения товаров корзины `items` в `basketList`;
+
+`price(price: number)` - сеттер сохранения общей суммы корзины `price` в `totalPrice`;
+
+`set canOrder(items: HTMLElement[])` - сеттер блокировки оформления в корзине. Доступно тогда, когда в корзине есть товары. 
+
+#### Класс Gallery
+Конструктор:
+`constructor(container: HTMLElement)` - конструктор принимает контейнер `HTMLElement`, блок разметки компонента.
+
+Поля класса - отсутствуют.
+
+Методы класса:
+
+`set catalog(items: HTMLElement[])` - сеттер сохранения карточек товаров `items` в `container`.
+
+#### Класс Modal
+Конструктор:
+`constructor(container: HTMLElement)` - конструктор принимает контейнер `HTMLElement`, блок разметки компонента.
+
+Поля класса:
+
+`closeButton: HTMLButtonElement` - кнопка закрытия модального окна;
+
+`modalContent: HTMLElement` - блок контента модального окна.
+
+Методы класса:
+
+`set content(content: HTMLElement)` - сеттер сохранения кнтента мадального окна `content` в `modalContent`;
+
+`open(content: HTMLElement)` - функция открытия модального окна;
+
+`close()` - функция закрытия модального окна.
+
+#### Класс SuccessOrder
+Конструктор:
+`constructor(container: HTMLElement, private events: IEvents)` конструктор принимает контейнер `HTMLElement`, блок разметки компонента, и экземпляр интерфейса `IEvents`, реализующий методы описания событий.
+
+Поля класса:
+
+`orderField: HTMLElement` - показатель суммы оформленной покупки;
+
+`submitOrderButton: HTMLButtonElement` - кнопка закрытия модального окна.
+
+Методы класса:
+
+`set order(value: number)` - сеттер сохранения суммы покупки `value` в `orderField`.
+
+#### Класс BaseCard
+Родительский класс для всех представлений карточки товара в приложении.
+
+Конструктор:
+`constructor(container: HTMLElement)` конструктор принимает контейнер `HTMLElement`, блок разметки компонента.
+
+Поля класса:
+
+`titleElement: HTMLElement` - название товара;
+
+`priceElement: HTMLElement` - стоимость товара.
+
+Методы класса:
+
+`set price(price: number | null)` - сеттер сохранения стоимости товара `price` в `priceElement`;
+
+`set title(title: string)` - сеттер сохранения названия товара `title` в `titleElement`;
+
+`setCategoryClass(category: string, categoryElement: HTMLElement)` - вспомагательный метод для добавления класса в зависимости от значения категории карточки.
+
+#### Класс CardBasket
+
+Конструктор:
+`constructor(container: HTMLElement, actions?: ICardActions)` конструктор принимает контейнер `HTMLElement`, блок разметки компонента, и обработчик событий `actions`.
+
+Поля класса:
+
+`deleteButton: HTMLButtonElement` - кнопка удаления товара из корзины;
+
+`cardIndex: HTMLElement` - индекс товара в корзине.
+
+Методы класса:
+
+`set index(value: number)` - сеттер сохранения индекса товара `value` в `cardIndex`.
+
+#### Класс CardCatalog
+
+Конструктор:
+`constructor(container: HTMLElement, actions?: ICardActions)` конструктор принимает контейнер `HTMLElement`, блок разметки компонента, и обработчик событий `actions`.
+
+Поля класса:
+
+`categoryElement: HTMLElement` - категория товара;
+
+`imageElement: HTMLImageElement` - изображение товара.
+
+Методы класса:
+
+`set image(src: string)` - сеттер сохранения ссылки на изображение товара `src` в `imageElement`;
+
+`set category(category: string)` - сеттер сохранения категории товара `category` в `categoryElement`.
+
+#### Класс CardPreview
+
+Конструктор:
+`constructor(container: HTMLElement, actions?: ICardActions)` конструктор принимает контейнер `HTMLElement`, блок разметки компонента, и обработчик событий `actions`.
+
+Поля класса:
+
+`categoryElement: HTMLElement` - категория товара;
+
+`imageElement: HTMLImageElement` - изображение товара,
+
+`descriptionElement: HTMLElement` - описание товара;
+
+`purchaseButton: HTMLButtonElement` - кнопка добавления товара в корзину.
+
+Методы класса:
+
+`set image(src: string)` - сеттер сохранения ссылки на изображение товара `src` в `imageElement`;
+
+`set category(category: string)` - сеттер сохранения категории товара `category` в `categoryElement`;
+
+`set description(description: string)` - сеттер сохранения описания товара `description` в `descriptionElement`;
+
+`set inBasket(isIn: boolean)` - сеттер определения товара в корзине `isIn` в `purchaseButton`;
+
+`set isPrice(price: number | null)` - сеттер блокировки кнопки покупки товара, в случае, если у товара нет цены.
+
+#### Класс BaseForm
+Родительский класс для всех представлений формы в приложении.
+
+Конструктор:
+`constructor(container: HTMLElement, private events: IEvents)` конструктор принимает контейнер `HTMLElement`, блок разметки компонента, и экземпляр интерфейса `IEvents`, реализующий методы описания событий.
+
+Поля класса:
+
+`submitButton: HTMLButtonElement` - кнопка подтверждения формы;
+
+`formErrors: HTMLElement` - объект ошибок формы;
+
+`form: HTMLFormElement` - контейнер формы;
+
+`formName: string` - название формы в разметке.
+
+Методы класса:
+
+`set errors(message: TBuyerErrors | null)` - сеттер сохранения ошибок валидации формы `message` в `formErrors`;
+
+`updateSubmitButton(isValid: boolean)` - вспомогательный метод обновления кнопки формы (заблокированная/доступная);
+
+`reset(): void` - функция сброса формы при завершении покупки.
+
+#### Класс ContactsForm
+
+Конструктор:
+`constructor(container: HTMLElement, private events: IEvents)` конструктор принимает контейнер `HTMLElement`, блок разметки компонента, и экземпляр интерфейса `IEvents`, реализующий методы описания событий.
+
+Поля класса:
+
+`emailInput: HTMLInputElement` - поле ввода почты в форму;
+
+`phoneInput: HTMLInputElement` - поле ввода номера телефона в форому.
+
+Методы класса:
+
+`set email(email: string)` - сеттер сохранения почты пользователя `email` в `emailInput`;
+
+`set phone(phone: string)` - сеттер сохранения телефона пользователя `phone` в `phoneInput`;
+
+`set isButtonBlocked(is: boolean)` - сеттер блокировки кнопки подтверждения формы.
+
+#### Класс OrderForm
+
+Конструктор:
+`constructor(container: HTMLElement, private events: IEvents)` конструктор принимает контейнер `HTMLElement`, блок разметки компонента, и экземпляр интерфейса `IEvents`, реализующий методы описания событий.
+
+Поля класса:
+
+`addressInput: HTMLInputElement` - поле ввода адреса в форму;
+
+`paymentButtons: HTMLButtonElement[]` - массив кнопок выбора способа оплаты.
+
+Методы класса:
+
+`set address(address: string)` - сеттер сохранения адреса пользователя `address` в `addressInput`;
+
+`set payment(payment: TPayment)` - сеттер сохранения способа оплаты пользователя `payment` в `paymentButtons`.
+
+`set isButtonBlocked(is: boolean)` - сеттер блокировки кнопки подтверждения формы.
+
+### Генерируемые события
+
+- `view:basket-open` - открытие корзины;
+- `view:basket-order` - оформление покупки товаров;
+- `view:success-order-close` - закрытие модального окна успешно оформленного заказа;
+- `view:form-changed` - изменение полей формы;
+- `view:form-contacts-submit` - подтверждение формы `ContactsForm`;
+- `view:form-order-submit` - подтверждение формы `OrderForm`;
+- `model-basket:change-cart` - изменение корзины товаров;
+- `model-catalog:set-products` - заполнение каталога товарами;
+- `model-catalog:set-current-product` - установка текущего товара из модели каталога для подробного рассмотрения;
+- `render:card-catalog-select` - выбор товара из каталога для подробного рассмотрения;
+- `render:card-preview-purchase` - добавление/удаление товара из корзины в `Gallery`;
+- `render:card-basket-delete` - удаление товара из корзины в `BasketView`.
