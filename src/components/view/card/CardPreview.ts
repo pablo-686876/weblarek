@@ -3,22 +3,21 @@ import { IBaseCard } from "./BaseCard";
 import { BaseCard } from "./BaseCard";
 import { ICardActions } from "../../../types";
 import { CDN_URL } from "../../../utils/constants";
+import { categoryMap } from "../../../utils/constants";
 
 interface ICardPreview extends IBaseCard {
-    isPrice: number | null;
     description: string;
     image: string;
     category: string;
-    inBasket: boolean;
+    buttonText: string;
+    isActive: boolean;
 }
 
 export class CardPreview extends BaseCard<ICardPreview> {
     private purchaseButton: HTMLButtonElement;
-    protected categoryElement: HTMLElement;
-    protected descriptionElement: HTMLElement;
-    protected imageElement: HTMLImageElement;
-
-    private _inBasket: boolean = false;
+    private categoryElement: HTMLElement;
+    private descriptionElement: HTMLElement;
+    private imageElement: HTMLImageElement;
 
     constructor(container: HTMLElement, actions?: ICardActions) {
         super(container);
@@ -33,38 +32,38 @@ export class CardPreview extends BaseCard<ICardPreview> {
             actions?.onClick?.();
           });
         }
-
-        this.purchaseButton.addEventListener("click", () => {
-            this._inBasket = !this._inBasket;
-            this.purchaseButton.textContent = this._inBasket 
-                ? "Удалить из корзины" 
-                : "В корзину";
-        });
     }
 
-    set image(src: string) {
+    private setCategoryClass(category: string, categoryElement: HTMLElement) {
+                Object.values(categoryMap).forEach(cls => {
+                    categoryElement!.classList.remove(cls);
+                });
+                const categoryClass = categoryMap[category as keyof typeof categoryMap];
+                if (categoryClass) {
+                    categoryElement.classList.add(categoryClass);
+                }
+            }
+
+    protected set image(src: string) {
         this.setImage(this.imageElement, CDN_URL + src.replace('.svg', '.png'));
     }
 
-    set category(category: string) {
+    protected set category(category: string) {
         this.categoryElement.textContent = category;
         this.setCategoryClass(category, this.categoryElement);
     }
 
-    set description(description: string) {
+    protected set description(description: string) {
         this.descriptionElement.textContent = description;
     }
 
-    set isPrice(price: number | null) {
-        if (!price) {
-            this.purchaseButton.disabled = true;
-        }
+    protected set buttonText(text: string) {
+        this.purchaseButton.textContent = text;
     }
 
-    set inBasket(isIn: boolean) {
-        this._inBasket = isIn;
-        this.purchaseButton.textContent = isIn 
-            ? "Удалить из корзины" 
-            : "В корзину";
+    protected set isActive(is: boolean) {
+        if (!is) {
+            this.purchaseButton.disabled = true;
+        }
     }
 }

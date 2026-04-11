@@ -1,15 +1,18 @@
 import { IBuyer, TPayment, TBuyerErrors} from "../../types/index";
+import { IEvents } from "../base/Events";
 
 export class Buyer {
   private payment: TPayment;
   private email: string;
   private phone: string;
   private address: string;
-  constructor() {
+  private events: IEvents;
+  constructor(events: IEvents) {
     this.payment = "";
     this.email = "";
     this.phone = "";
     this.address = "";
+    this.events = events;
   }
   getBuyerData(): IBuyer {
     return {
@@ -24,20 +27,25 @@ export class Buyer {
     this.email = "",
     this.phone = "",
     this.address = "";
+    this.events.emit("model-buyer:clear-data")
   }
 
   setBuyerData(buyer: Partial<IBuyer>): void {
     if (buyer.payment !== undefined) {
       this.payment = buyer.payment;
+      this.events.emit("model-buyer:order-change")
     }
     if (buyer.email !== undefined) {
       this.email = buyer.email.trim();
+      this.events.emit("model-buyer:contacts-change")
     }
     if (buyer.phone !== undefined) {
       this.phone = buyer.phone.trim();
+      this.events.emit("model-buyer:contacts-change")
     }
     if (buyer.address !== undefined) {
       this.address = buyer.address.trim();
+      this.events.emit("model-buyer:order-change")
     }
   }
 

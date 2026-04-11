@@ -1,7 +1,5 @@
 import { Component } from "../../base/Component";
 import { ensureElement } from "../../../utils/utils";
-import { categoryMap } from "../../../utils/constants";
-
 
 export interface IBaseCard {
     title: string
@@ -9,8 +7,8 @@ export interface IBaseCard {
 }
 
 export class BaseCard<T extends IBaseCard> extends Component<T> {
-    protected titleElement: HTMLElement;
-    protected priceElement: HTMLElement;
+    private titleElement: HTMLElement;
+    private priceElement: HTMLElement;
 
     constructor(container: HTMLElement) {
         super(container);
@@ -25,16 +23,6 @@ export class BaseCard<T extends IBaseCard> extends Component<T> {
 
     protected set title(title: string) {
         this.titleElement.textContent = title;
-    }
-
-    protected setCategoryClass(category: string, categoryElement: HTMLElement) {
-        Object.values(categoryMap).forEach(cls => {
-            categoryElement!.classList.remove(cls);
-        });
-        const categoryClass = categoryMap[category as keyof typeof categoryMap];
-        if (categoryClass) {
-            categoryElement.classList.add(categoryClass);
-        }
     }
 }
 

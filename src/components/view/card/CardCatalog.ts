@@ -3,6 +3,7 @@ import { BaseCard } from "./BaseCard";
 import { ICardActions } from "../../../types";
 import { ensureElement } from "../../../utils/utils";
 import { CDN_URL } from "../../../utils/constants";
+import { categoryMap } from "../../../utils/constants";
 
 interface ICardCatalog extends IBaseCard {
     image: string;
@@ -10,8 +11,8 @@ interface ICardCatalog extends IBaseCard {
 }
 
 export class CardCatalog extends BaseCard<ICardCatalog> {
-    protected categoryElement: HTMLElement;
-    protected imageElement: HTMLImageElement;
+    private categoryElement: HTMLElement;
+    private imageElement: HTMLImageElement;
 
     constructor(container: HTMLElement, actions?: ICardActions) {
         super(container);
@@ -26,11 +27,21 @@ export class CardCatalog extends BaseCard<ICardCatalog> {
         }
     }
 
-    set image(src: string) {
+    private setCategoryClass(category: string, categoryElement: HTMLElement) {
+            Object.values(categoryMap).forEach(cls => {
+                categoryElement!.classList.remove(cls);
+            });
+            const categoryClass = categoryMap[category as keyof typeof categoryMap];
+            if (categoryClass) {
+                categoryElement.classList.add(categoryClass);
+            }
+        }
+
+    protected set image(src: string) {
         this.setImage(this.imageElement, CDN_URL + src.replace('.svg', '.png'));
     }
 
-    set category(category: string) {
+    protected set category(category: string) {
         this.categoryElement.textContent = category;
         this.setCategoryClass(category, this.categoryElement);
     }

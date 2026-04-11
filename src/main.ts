@@ -5,7 +5,7 @@ import { API_URL } from "./utils/constants";
 import { ProductCatalog } from "./components/models/ProductCatalog";
 import { Basket } from "./components/models/Basket";
 import { Buyer } from "./components/models/Buyer";
-import { IProduct, TBuyerErrors, IBuyer} from "./types";
+import { IProduct, IBuyer, IOrderRequest} from "./types";
 import { EventEmitter } from "./components/base/Events";
 import { Header } from "./components/view/Header";
 import { Gallery } from "./components/view/Gallery";
@@ -29,25 +29,25 @@ const web = new WebApi(api);
 // создание экземпляров моделей
 const catalog = new ProductCatalog(events);
 const basket = new Basket(events);
-const buyer = new Buyer();
+const buyer = new Buyer(events);
 
 // создание шаблонов
-const cardCatalogTemplate = cloneTemplate<HTMLTemplateElement>("#card-catalog");
-const cardPreviewTemplate = cloneTemplate<HTMLTemplateElement>("#card-preview");
-const cardBasketTemplate = cloneTemplate<HTMLTemplateElement>("#card-basket");
-const basketViewTemplate = cloneTemplate<HTMLTemplateElement>("#basket");
-const successOrderTemplate = cloneTemplate<HTMLTemplateElement>("#success");
-const orderFormTemplate = cloneTemplate<HTMLTemplateElement>("#order");
-const contactsFormTemplate = cloneTemplate<HTMLTemplateElement>("#contacts");
+const cardCatalogTemplate = ensureElement<HTMLTemplateElement>("#card-catalog");
+const cardPreviewTemplate = ensureElement<HTMLTemplateElement>("#card-preview");
+const cardBasketTemplate = ensureElement<HTMLTemplateElement>("#card-basket");
+const basketViewTemplate = ensureElement<HTMLTemplateElement>("#basket");
+const successOrderTemplate = ensureElement<HTMLTemplateElement>("#success");
+const orderFormTemplate = ensureElement<HTMLTemplateElement>("#order");
+const contactsFormTemplate = ensureElement<HTMLTemplateElement>("#contacts");
 
 // создание экземпляров представлений
 const header = new Header(ensureElement<HTMLElement>(".header"), events);
 const modal = new Modal(ensureElement<HTMLElement>(".modal"));
 const gallery = new Gallery(ensureElement<HTMLElement>(".gallery"));
-const orderForm = new OrderForm(orderFormTemplate.cloneNode(true) as HTMLFormElement, events);
-const contactsForm = new ContactsForm(contactsFormTemplate.cloneNode(true) as HTMLFormElement, events);
-const successOrder = new SuccessOrder(successOrderTemplate.cloneNode(true) as HTMLElement, events);
-const basketView = new BasketView(basketViewTemplate.cloneNode(true) as HTMLElement, events);
+const orderForm = new OrderForm(cloneTemplate<HTMLFormElement>(orderFormTemplate), events);
+const contactsForm = new ContactsForm(cloneTemplate<HTMLFormElement>(contactsFormTemplate), events);
+const successOrder = new SuccessOrder(cloneTemplate<HTMLElement>(successOrderTemplate), events);
+const basketView = new BasketView(cloneTemplate<HTMLElement>(basketViewTemplate), events);
 
 async function init() {
   try {
@@ -58,11 +58,38 @@ async function init() {
   }
 }
 
+async function post(data: IOrderRequest) {
+  try {
+    const apiOrder = await web.postOrder(data);
+    return apiOrder;
+  } catch (error) {
+    console.error("Ошибка сервера", error);
+  }
+}
+
 init();
+
+// вспомогательные функции
+function cardPreviewText(item: IProduct): string {
+  if (!catalog.getProductbyId(item.id)?.price) {
+    return "Недоступно";
+  }
+  if (!basket.isCartProductById(item.id)) {
+    return "В корзину";
+  }
+  return "Удалить из корзины";
+}
+
+function cardPreviewIsButtonActive(item: IProduct): boolean {
+  if (catalog.getProductbyId(item.id)?.price) {
+    return true;
+  }
+  return false;
+}
 
 // вспомогательные функции рендера
 function renderCardCatalog(item: IProduct): HTMLElement {
-  const card = new CardCatalog(cardCatalogTemplate.cloneNode(true) as HTMLElement, {
+  const card = new CardCatalog(cloneTemplate<HTMLElement>(cardCatalogTemplate), {
     onClick: () => {
       events.emit("render:card-catalog-select", item)
     }
@@ -71,17 +98,16 @@ function renderCardCatalog(item: IProduct): HTMLElement {
 }
 
 function renderCardPreview(item: IProduct): HTMLElement {
-  const card = new CardPreview(cardPreviewTemplate.cloneNode(true) as HTMLElement, {
+  const card = new CardPreview(cloneTemplate<HTMLElement>(cardPreviewTemplate), {
     onClick: () => {
-      
       events.emit("render:card-preview-purchase", item)
     }
   });
-  return card.render({...item, isPrice: item.price, inBasket: basket.isCartProductById(item.id)});
+  return card.render({...item, buttonText: cardPreviewText(item), isActive: cardPreviewIsButtonActive(item)});
 }
 
 function renderCardBasket(item: IProduct, index: number): HTMLElement {
-  const card = new CardBasket(cardBasketTemplate.cloneNode(true) as HTMLElement, {
+  const card = new CardBasket(cloneTemplate<HTMLElement>(cardBasketTemplate), {
     onClick: () => {
       events.emit("render:card-basket-delete", item)
     }
@@ -98,29 +124,18 @@ function renderHeader(): HTMLElement {
   return header.render({counter: basket.getCartProductCount()});
 }
 
-function renderOrderForm(errors?: TBuyerErrors, isButtonBlocked?: boolean): HTMLElement {
+function renderOrderForm(showErrors: boolean): HTMLElement {
   const {payment, address} = buyer.getBuyerData();
-  if (errors && isButtonBlocked) {
-    return orderForm.render({payment, address, errors, isButtonBlocked})
-  }
-  else {
-    return orderForm.render({payment, address, errors: null})
-  }
+  const errors = buyer.validateBuyerData(['payment', 'address']);
+  const errorsToShow = showErrors ? errors : {};
+  return orderForm.render({payment, address, errors: errorsToShow, valid: Object.keys(errors).length === 0})
 }
 
-function renderContactsForm(errors?: TBuyerErrors, isButtonBlocked?: boolean): HTMLElement {
+function renderContactsForm(showErrors: boolean): HTMLElement {
   const {phone, email} = buyer.getBuyerData();
-  if (errors && isButtonBlocked) {
-    return contactsForm.render({phone, email, errors, isButtonBlocked})
-  }
-  else {
-    return contactsForm.render({phone, email, errors: null})
-  }
-}
-
-function renderSuccessOrder(): HTMLElement {
-  return successOrder.render({order: basket.getCartSum()});
-
+  const errors = buyer.validateBuyerData(['phone', 'email'])
+  const errorsToShow = showErrors ? errors : {};
+  return contactsForm.render({phone, email, errors: errorsToShow, valid: Object.keys(errors).length === 0})
 }
 
 // обработка событий gallery
@@ -144,9 +159,11 @@ events.on<IProduct>("model-catalog:set-current-product", () => {
 events.on<IProduct>("render:card-preview-purchase", (item) => {
   if (!basket.isCartProductById(item.id)) {
     basket.addProduct(item);
+    modal.close();
   }
   else {
     basket.deleteProduct(item);
+    modal.close();
   }
 })
 
@@ -163,11 +180,16 @@ events.on<IProduct>("model-basket:change-cart", () => {
 // обработка событий header
 events.on('view:basket-open', () => {
   modal.open(renderBasketView());
+  // я не очень понимаю, как в модалку передать корзину без рендера:(
 })
 
 // обработка событий форм
 events.on('view:basket-order', () => {
-  modal.render({content: renderOrderForm()});
+  modal.render({content: renderOrderForm(false)});
+})
+
+events.on("view:form-order-submit", () => {
+    modal.render({content: renderContactsForm(false)});
 })
 
 events.on<{ field: keyof IBuyer; value: string }>("view:form-changed", ({ field, value }) => {
@@ -175,29 +197,25 @@ events.on<{ field: keyof IBuyer; value: string }>("view:form-changed", ({ field,
     console.log(buyer.getBuyerData())
 });
 
-events.on("view:form-order-submit", () => {
-  const errors = buyer.validateBuyerData(['payment', 'address'])
-  if (Object.keys(errors).length === 0) {
-    modal.render({content: renderOrderForm()});
-    modal.render({content: renderContactsForm()});
-  }
-  else {
-    modal.render({content: renderOrderForm(errors, true)});
-  }
+events.on("model-buyer:order-change", () => {
+  renderOrderForm(true);
 })
 
-events.on("view:form-contacts-submit", () => {
-  const errors = buyer.validateBuyerData(['email', 'phone'])
-  if (Object.keys(errors).length === 0) {
-    modal.render({content: renderSuccessOrder()});
-    basket.clearCart();
-    buyer.clearBuyerData();
-    renderHeader();
-    contactsForm.reset();
-    orderForm.reset();
+events.on("model-buyer:contacts-change", () => {
+  renderContactsForm(true);
+});
+
+events.on("view:form-contacts-submit", async () => {
+  try {
+    const data = {...buyer.getBuyerData(), total: basket.getCartSum(), items: basket.getCartList().map(elem => elem.id)}
+    const response = await post(data);
+    modal.render({content: successOrder.render({order: response?.total})});
+    basket.clearCart(); 
+    buyer.clearBuyerData(); 
+    renderHeader(); 
   }
-  else {
-    modal.render({content: renderContactsForm(errors, true)});
+  catch (e) {
+    console.log(e);
   }
 })
 

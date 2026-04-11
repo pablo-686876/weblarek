@@ -21,7 +21,7 @@ export class SuccessOrder extends Component<ISuccessOrder> {
         })
     }
 
-    set order(value: number) {
+    protected set order(value: number) {
         this.orderField.textContent = `Списано ${value.toString()} синапсов`
     }
 }

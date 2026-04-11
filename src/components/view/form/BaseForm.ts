@@ -4,7 +4,8 @@ import { IEvents } from "../../base/Events";
 import { TBuyerErrors } from "../../../types";
 
 export interface IBaseForm {
-    errors?: TBuyerErrors | null;
+    errors: TBuyerErrors | null;
+    valid: boolean;
 }
 
 export class BaseForm<T extends IBaseForm> extends Component<T> {
@@ -28,13 +29,7 @@ export class BaseForm<T extends IBaseForm> extends Component<T> {
         this.formErrors.textContent = message ? Object.values(message).join("\n") : "";
     }
 
-    protected updateSubmitButton(isValid: boolean) {
+    protected set valid(isValid: boolean) {
         this.submitButton.disabled = !isValid;
-    }
-
-    reset(): void {
-        this.form?.reset();
-        this.errors = null;
-        this.submitButton.disabled = true;
     }
 }

@@ -25,7 +25,7 @@ export class CardBasket extends BaseCard<ICardBasket> {
         }
     }
 
-    set index(value: number) {
+    protected set index(value: number) {
         this.cardIndex.textContent = value.toString();
     }
 

@@ -223,6 +223,7 @@ interface IBuyer {
 
 `async postOrder(data: IOrderRequest): Promise<IOrderResponse>` - создает заказ, данные берутся из `IOrderRequest`, ответ сервера соответсвует интерфейсу `IOrderResponse`.
 
+
 ### Слой представления - View
 
 Все классы представления будут наследоваться от класса Component, содержащего метод `render`, с помощью которого будет строиться отображения всех компонентов приложения.
@@ -259,7 +260,7 @@ interface IBuyer {
 
 `set items(items: HTMLElement[])` - сеттер сохранения товаров корзины `items` в `basketList`;
 
-`price(price: number)` - сеттер сохранения общей суммы корзины `price` в `totalPrice`;
+`set price(price: number)` - сеттер сохранения общей суммы корзины `price` в `totalPrice`;
 
 `set canOrder(items: HTMLElement[])` - сеттер блокировки оформления в корзине. Доступно тогда, когда в корзине есть товары. 
 
@@ -323,8 +324,6 @@ interface IBuyer {
 
 `set title(title: string)` - сеттер сохранения названия товара `title` в `titleElement`;
 
-`setCategoryClass(category: string, categoryElement: HTMLElement)` - вспомагательный метод для добавления класса в зависимости от значения категории карточки.
-
 #### Класс CardBasket
 
 Конструктор:
@@ -355,7 +354,9 @@ interface IBuyer {
 
 `set image(src: string)` - сеттер сохранения ссылки на изображение товара `src` в `imageElement`;
 
-`set category(category: string)` - сеттер сохранения категории товара `category` в `categoryElement`.
+`set category(category: string)` - сеттер сохранения категории товара `category` в `categoryElement`;
+
+`setCategoryClass(category: string, categoryElement: HTMLElement)` - вспомагательный метод для добавления класса в зависимости от значения категории карточки.
 
 #### Класс CardPreview
 
@@ -380,9 +381,11 @@ interface IBuyer {
 
 `set description(description: string)` - сеттер сохранения описания товара `description` в `descriptionElement`;
 
-`set inBasket(isIn: boolean)` - сеттер определения товара в корзине `isIn` в `purchaseButton`;
+`protected set buttonText(text: string)` - сеттер определения текста кнопки карточки товара - "В корзину"/"Удалить из корзины";
 
-`set isPrice(price: number | null)` - сеттер блокировки кнопки покупки товара, в случае, если у товара нет цены.
+`protected set isActive(is: boolean)` - сеттер блокировки кнопки покупки товара, в случае, если у товара нет цены.
+
+`setCategoryClass(category: string, categoryElement: HTMLElement)` - вспомагательный метод для добавления класса в зависимости от значения категории карточки.
 
 #### Класс BaseForm
 Родительский класс для всех представлений формы в приложении.
@@ -404,9 +407,7 @@ interface IBuyer {
 
 `set errors(message: TBuyerErrors | null)` - сеттер сохранения ошибок валидации формы `message` в `formErrors`;
 
-`updateSubmitButton(isValid: boolean)` - вспомогательный метод обновления кнопки формы (заблокированная/доступная);
-
-`reset(): void` - функция сброса формы при завершении покупки.
+`set valid(isValid: boolean)` - сеттер обновления кнопки формы (заблокированная/доступная);
 
 #### Класс ContactsForm
 
@@ -425,8 +426,6 @@ interface IBuyer {
 
 `set phone(phone: string)` - сеттер сохранения телефона пользователя `phone` в `phoneInput`;
 
-`set isButtonBlocked(is: boolean)` - сеттер блокировки кнопки подтверждения формы.
-
 #### Класс OrderForm
 
 Конструктор:
@@ -444,8 +443,6 @@ interface IBuyer {
 
 `set payment(payment: TPayment)` - сеттер сохранения способа оплаты пользователя `payment` в `paymentButtons`.
 
-`set isButtonBlocked(is: boolean)` - сеттер блокировки кнопки подтверждения формы.
-
 ### Генерируемые события
 
 - `view:basket-open` - открытие корзины;
@@ -459,4 +456,6 @@ interface IBuyer {
 - `model-catalog:set-current-product` - установка текущего товара из модели каталога для подробного рассмотрения;
 - `render:card-catalog-select` - выбор товара из каталога для подробного рассмотрения;
 - `render:card-preview-purchase` - добавление/удаление товара из корзины в `Gallery`;
-- `render:card-basket-delete` - удаление товара из корзины в `BasketView`.
+- `render:card-basket-delete` - удаление товара из корзины в `BasketView`;
+- `model-buyer:contacts-change` - изменение полей в форме `ContactsForm`;
+- `model-buyer:order-change` - изменение полей в форме `OrderForm`.

@@ -29,22 +29,21 @@ export class BasketView extends Component<IBasketView> {
         })
 
     }
-    set items(items: HTMLElement[]) {
+    protected set items(items: HTMLElement[]) {
         if (items.length === 0) {
             this.basketList.replaceChildren();
             this.basketList.append(this.emptyElement);
-
         }
         else {
             this.basketList.replaceChildren(...items);
         }
     }
 
-    set price(price: number) {
+    protected set price(price: number) {
         this.totalPrice.textContent = `${price.toString()} синапсов`;
     }
 
-    set canOrder(items: HTMLElement[]) {
+    protected set canOrder(items: HTMLElement[]) {
         if (items.length === 0) {
             this.orderButton.disabled = true;
         }
@@ -52,5 +51,4 @@ export class BasketView extends Component<IBasketView> {
             this.orderButton.disabled = false;
         }
     }
-
 }
