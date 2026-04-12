@@ -180,7 +180,6 @@ events.on("view:form-order-submit", () => {
 
 events.on<{ field: keyof IBuyer; value: string }>("view:form-changed", ({ field, value }) => {
   buyer.setBuyerData({ [field]: value } as Partial<IBuyer>);
-  console.log(buyer.getBuyerData())
 });
 
 events.on("model-buyer:data-changed", () => {
