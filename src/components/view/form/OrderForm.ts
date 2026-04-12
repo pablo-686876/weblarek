@@ -15,8 +15,6 @@ export class OrderForm extends BaseForm<IOrderForm> {
     constructor(container: HTMLFormElement, events: IEvents,) {
         super(container, events);
 
-        // this.submitButton.disabled = true;
-
         this.addressInput = ensureElement<HTMLInputElement>('input[name="address"]', this.container);
         this.paymentButtons = ensureAllElements<HTMLButtonElement>(".order__buttons button", this.container)
 
@@ -29,11 +27,6 @@ export class OrderForm extends BaseForm<IOrderForm> {
         this.addressInput.addEventListener("input", () => {
             this.events.emit(`view:form-changed`, { field: 'address', value: this.addressInput.value })
         });
-
-        this.container.addEventListener("submit", (event) => {
-            event.preventDefault();
-            this.events.emit("view:form-order-submit");
-        })
     }
 
     protected set address(address: string) {

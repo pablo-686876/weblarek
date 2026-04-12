@@ -24,5 +24,4 @@ export class Header extends Component<IHeader> {
     protected set counter(value: number) {
         this.basketCounter.textContent = value.toString();
     }
-
 }

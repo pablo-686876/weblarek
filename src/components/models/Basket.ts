@@ -27,7 +27,7 @@ export class Basket {
   }
   clearCart(): void {
     this.items = [];
-    this.events.emit("model-basket:clear-cart")
+    this.events.emit("model-basket:change-cart")
   }
   getCartSum(): number {
     return this.items.reduce((sum, item) => (sum += item.price || 0), 0);

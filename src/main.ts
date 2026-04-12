@@ -5,7 +5,7 @@ import { API_URL } from "./utils/constants";
 import { ProductCatalog } from "./components/models/ProductCatalog";
 import { Basket } from "./components/models/Basket";
 import { Buyer } from "./components/models/Buyer";
-import { IProduct, IBuyer, IOrderRequest} from "./types";
+import { IProduct, IBuyer } from "./types";
 import { EventEmitter } from "./components/base/Events";
 import { Header } from "./components/view/Header";
 import { Gallery } from "./components/view/Gallery";
@@ -33,12 +33,12 @@ const buyer = new Buyer(events);
 
 // создание шаблонов
 const cardCatalogTemplate = ensureElement<HTMLTemplateElement>("#card-catalog");
-const cardPreviewTemplate = ensureElement<HTMLTemplateElement>("#card-preview");
 const cardBasketTemplate = ensureElement<HTMLTemplateElement>("#card-basket");
 const basketViewTemplate = ensureElement<HTMLTemplateElement>("#basket");
 const successOrderTemplate = ensureElement<HTMLTemplateElement>("#success");
 const orderFormTemplate = ensureElement<HTMLTemplateElement>("#order");
 const contactsFormTemplate = ensureElement<HTMLTemplateElement>("#contacts");
+const cardPreviewTemplate = cloneTemplate<HTMLTemplateElement>("#card-preview");
 
 // создание экземпляров представлений
 const header = new Header(ensureElement<HTMLElement>(".header"), events);
@@ -49,21 +49,18 @@ const contactsForm = new ContactsForm(cloneTemplate<HTMLFormElement>(contactsFor
 const successOrder = new SuccessOrder(cloneTemplate<HTMLElement>(successOrderTemplate), events);
 const basketView = new BasketView(cloneTemplate<HTMLElement>(basketViewTemplate), events);
 
+const cardPreview = new CardPreview(cardPreviewTemplate, {
+  onClick: () => {
+    events.emit("render:card-preview-purchase");
+  }
+})
+
 async function init() {
   try {
     const apiCatalog = await web.getProductList();
     catalog.setProducts(apiCatalog);
   } catch (error) {
     console.error("Ошибка инициализации", error);
-  }
-}
-
-async function post(data: IOrderRequest) {
-  try {
-    const apiOrder = await web.postOrder(data);
-    return apiOrder;
-  } catch (error) {
-    console.error("Ошибка сервера", error);
   }
 }
 
@@ -80,13 +77,6 @@ function cardPreviewText(item: IProduct): string {
   return "Удалить из корзины";
 }
 
-function cardPreviewIsButtonActive(item: IProduct): boolean {
-  if (catalog.getProductbyId(item.id)?.price) {
-    return true;
-  }
-  return false;
-}
-
 // вспомогательные функции рендера
 function renderCardCatalog(item: IProduct): HTMLElement {
   const card = new CardCatalog(cloneTemplate<HTMLElement>(cardCatalogTemplate), {
@@ -98,12 +88,7 @@ function renderCardCatalog(item: IProduct): HTMLElement {
 }
 
 function renderCardPreview(item: IProduct): HTMLElement {
-  const card = new CardPreview(cloneTemplate<HTMLElement>(cardPreviewTemplate), {
-    onClick: () => {
-      events.emit("render:card-preview-purchase", item)
-    }
-  });
-  return card.render({...item, buttonText: cardPreviewText(item), isActive: cardPreviewIsButtonActive(item)});
+  return cardPreview.render({ ...item, buttonText: cardPreviewText(item), isActive: !!(item.price) });
 }
 
 function renderCardBasket(item: IProduct, index: number): HTMLElement {
@@ -112,36 +97,36 @@ function renderCardBasket(item: IProduct, index: number): HTMLElement {
       events.emit("render:card-basket-delete", item)
     }
   });
-  return card.render({...item, index: index + 1});
+  return card.render({ ...item, index: index + 1 });
 }
 
 function renderBasketView(): HTMLElement {
   const cards = basket.getCartList().map(renderCardBasket);
-  return basketView.render({price: basket.getCartSum(), items: cards, canOrder: cards});
+  return basketView.render({ price: basket.getCartSum(), items: cards, canOrder: cards });
 }
 
 function renderHeader(): HTMLElement {
-  return header.render({counter: basket.getCartProductCount()});
+  return header.render({ counter: basket.getCartProductCount() });
 }
 
 function renderOrderForm(showErrors: boolean): HTMLElement {
-  const {payment, address} = buyer.getBuyerData();
+  const { payment, address } = buyer.getBuyerData();
   const errors = buyer.validateBuyerData(['payment', 'address']);
   const errorsToShow = showErrors ? errors : {};
-  return orderForm.render({payment, address, errors: errorsToShow, valid: Object.keys(errors).length === 0})
+  return orderForm.render({ payment, address, errors: errorsToShow, valid: Object.keys(errors).length === 0 })
 }
 
 function renderContactsForm(showErrors: boolean): HTMLElement {
-  const {phone, email} = buyer.getBuyerData();
+  const { phone, email } = buyer.getBuyerData();
   const errors = buyer.validateBuyerData(['phone', 'email'])
   const errorsToShow = showErrors ? errors : {};
-  return contactsForm.render({phone, email, errors: errorsToShow, valid: Object.keys(errors).length === 0})
+  return contactsForm.render({ phone, email, errors: errorsToShow, valid: Object.keys(errors).length === 0 })
 }
 
 // обработка событий gallery
 events.on<IProduct[]>("model-catalog:set-products", () => {
   const cards = catalog.getProducts().map(renderCardCatalog)
-  gallery.render({catalog: cards});
+  gallery.render({ catalog: cards });
 })
 
 // обработка событий cards
@@ -156,13 +141,15 @@ events.on<IProduct>("model-catalog:set-current-product", () => {
   }
 })
 
-events.on<IProduct>("render:card-preview-purchase", (item) => {
-  if (!basket.isCartProductById(item.id)) {
-    basket.addProduct(item);
-    modal.close();
-  }
-  else {
-    basket.deleteProduct(item);
+events.on<IProduct>("render:card-preview-purchase", () => {
+  const card = catalog.getCurrentProduct();
+  if (card) {
+    if (!basket.isCartProductById(card.id)) {
+      basket.addProduct(card);
+    }
+    else {
+      basket.deleteProduct(card);
+    }
     modal.close();
   }
 })
@@ -179,43 +166,38 @@ events.on<IProduct>("model-basket:change-cart", () => {
 
 // обработка событий header
 events.on('view:basket-open', () => {
-  modal.open(renderBasketView());
-  // я не очень понимаю, как в модалку передать корзину без рендера:(
+  modal.open(basketView.render());
 })
 
 // обработка событий форм
 events.on('view:basket-order', () => {
-  modal.render({content: renderOrderForm(false)});
+  modal.render({ content: renderOrderForm(false) });
 })
 
 events.on("view:form-order-submit", () => {
-    modal.render({content: renderContactsForm(false)});
+  modal.render({ content: renderContactsForm(false) });
 })
 
 events.on<{ field: keyof IBuyer; value: string }>("view:form-changed", ({ field, value }) => {
-    buyer.setBuyerData({ [field]: value } as Partial<IBuyer>);
-    console.log(buyer.getBuyerData())
+  buyer.setBuyerData({ [field]: value } as Partial<IBuyer>);
+  console.log(buyer.getBuyerData())
 });
 
-events.on("model-buyer:order-change", () => {
+events.on("model-buyer:data-changed", () => {
   renderOrderForm(true);
-})
-
-events.on("model-buyer:contacts-change", () => {
   renderContactsForm(true);
-});
+})
 
 events.on("view:form-contacts-submit", async () => {
   try {
-    const data = {...buyer.getBuyerData(), total: basket.getCartSum(), items: basket.getCartList().map(elem => elem.id)}
-    const response = await post(data);
-    modal.render({content: successOrder.render({order: response?.total})});
-    basket.clearCart(); 
-    buyer.clearBuyerData(); 
-    renderHeader(); 
+    const data = { ...buyer.getBuyerData(), total: basket.getCartSum(), items: basket.getCartList().map(elem => elem.id) }
+    const response = await web.postOrder(data);
+    modal.render({ content: successOrder.render({ order: response?.total }) });
+    basket.clearCart();
+    buyer.clearBuyerData();
   }
-  catch (e) {
-    console.log(e);
+  catch (error) {
+    console.error("Ошибка сервера", error);
   }
 })
 

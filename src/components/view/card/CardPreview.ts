@@ -28,21 +28,21 @@ export class CardPreview extends BaseCard<ICardPreview> {
         this.imageElement = ensureElement<HTMLImageElement>(".card__image", this.container);
 
         if (actions?.onClick) {
-          this.purchaseButton.addEventListener("click", () => {
-            actions?.onClick?.();
-          });
+            this.purchaseButton.addEventListener("click", () => {
+                actions?.onClick?.();
+            });
         }
     }
 
     private setCategoryClass(category: string, categoryElement: HTMLElement) {
-                Object.values(categoryMap).forEach(cls => {
-                    categoryElement!.classList.remove(cls);
-                });
-                const categoryClass = categoryMap[category as keyof typeof categoryMap];
-                if (categoryClass) {
-                    categoryElement.classList.add(categoryClass);
-                }
-            }
+        Object.values(categoryMap).forEach(cls => {
+            categoryElement!.classList.remove(cls);
+        });
+        const categoryClass = categoryMap[category as keyof typeof categoryMap];
+        if (categoryClass) {
+            categoryElement.classList.add(categoryClass);
+        }
+    }
 
     protected set image(src: string) {
         this.setImage(this.imageElement, CDN_URL + src.replace('.svg', '.png'));
@@ -61,9 +61,7 @@ export class CardPreview extends BaseCard<ICardPreview> {
         this.purchaseButton.textContent = text;
     }
 
-    protected set isActive(is: boolean) {
-        if (!is) {
-            this.purchaseButton.disabled = true;
-        }
+    protected set isActive(isDisabled: boolean) {
+        this.purchaseButton.disabled = !isDisabled;
     }
 }

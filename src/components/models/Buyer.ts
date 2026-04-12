@@ -1,4 +1,4 @@
-import { IBuyer, TPayment, TBuyerErrors} from "../../types/index";
+import { IBuyer, TPayment, TBuyerErrors } from "../../types/index";
 import { IEvents } from "../base/Events";
 
 export class Buyer {
@@ -24,28 +24,28 @@ export class Buyer {
   }
   clearBuyerData(): void {
     this.payment = "",
-    this.email = "",
-    this.phone = "",
-    this.address = "";
-    this.events.emit("model-buyer:clear-data")
+      this.email = "",
+      this.phone = "",
+      this.address = "";
+    this.events.emit("model-buyer:data-changed")
   }
 
   setBuyerData(buyer: Partial<IBuyer>): void {
     if (buyer.payment !== undefined) {
       this.payment = buyer.payment;
-      this.events.emit("model-buyer:order-change")
+      this.events.emit("model-buyer:data-changed")
     }
     if (buyer.email !== undefined) {
       this.email = buyer.email.trim();
-      this.events.emit("model-buyer:contacts-change")
+      this.events.emit("model-buyer:data-changed")
     }
     if (buyer.phone !== undefined) {
       this.phone = buyer.phone.trim();
-      this.events.emit("model-buyer:contacts-change")
+      this.events.emit("model-buyer:data-changed")
     }
     if (buyer.address !== undefined) {
       this.address = buyer.address.trim();
-      this.events.emit("model-buyer:order-change")
+      this.events.emit("model-buyer:data-changed")
     }
   }
 

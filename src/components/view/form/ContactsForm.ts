@@ -14,8 +14,6 @@ export class ContactsForm extends BaseForm<IContactForm> {
     constructor(container: HTMLFormElement, events: IEvents) {
         super(container, events);
 
-        // this.submitButton.disabled = true;
-
         this.emailInput = ensureElement<HTMLInputElement>('input[name="email"]', this.container);
         this.phoneInput = ensureElement<HTMLInputElement>('input[name="phone"]', this.container);
 
@@ -26,18 +24,13 @@ export class ContactsForm extends BaseForm<IContactForm> {
         this.phoneInput.addEventListener("input", () => {
             this.events.emit("view:form-changed", { field: 'phone', value: this.phoneInput.value });
         });
-
-        this.container.addEventListener("submit", (event) => {
-            event.preventDefault();
-            this.events.emit("view:form-contacts-submit");
-        })
     }
 
     protected set email(email: string) {
-            this.emailInput.value = email;
-        }
-    
+        this.emailInput.value = email;
+    }
+
     protected set phone(phone: string) {
-            this.phoneInput.value = phone;
+        this.phoneInput.value = phone;
     }
 }

@@ -383,7 +383,7 @@ interface IBuyer {
 
 `protected set buttonText(text: string)` - сеттер определения текста кнопки карточки товара - "В корзину"/"Удалить из корзины";
 
-`protected set isActive(is: boolean)` - сеттер блокировки кнопки покупки товара, в случае, если у товара нет цены.
+`protected set isActive(isDisabled: boolean)` - сеттер блокировки кнопки покупки товара, в случае, если у товара нет цены.
 
 `setCategoryClass(category: string, categoryElement: HTMLElement)` - вспомагательный метод для добавления класса в зависимости от значения категории карточки.
 
@@ -457,5 +457,4 @@ interface IBuyer {
 - `render:card-catalog-select` - выбор товара из каталога для подробного рассмотрения;
 - `render:card-preview-purchase` - добавление/удаление товара из корзины в `Gallery`;
 - `render:card-basket-delete` - удаление товара из корзины в `BasketView`;
-- `model-buyer:contacts-change` - изменение полей в форме `ContactsForm`;
-- `model-buyer:order-change` - изменение полей в форме `OrderForm`.
+- `model-buyer:data-changed` - изменение полей в формах.

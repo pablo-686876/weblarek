@@ -19,10 +19,15 @@ export class BaseForm<T extends IBaseForm> extends Component<T> {
 
         this.submitButton = ensureElement<HTMLButtonElement>('button[type="submit"]', this.container);
         this.formErrors = ensureElement<HTMLElement>(".form__errors", this.container);
-        this.form = container.tagName === 'FORM' 
+        this.form = container.tagName === 'FORM'
             ? container as HTMLFormElement
             : ensureElement<HTMLFormElement>(".form", this.container);
         this.formName = this.form.name;
+
+        this.container.addEventListener("submit", (event) => {
+            event.preventDefault();
+            this.events.emit(`view:form-${this.formName}-submit`);
+        })
     }
 
     protected set errors(message: TBuyerErrors | null) {

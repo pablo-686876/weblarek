@@ -28,14 +28,14 @@ export class CardCatalog extends BaseCard<ICardCatalog> {
     }
 
     private setCategoryClass(category: string, categoryElement: HTMLElement) {
-            Object.values(categoryMap).forEach(cls => {
-                categoryElement!.classList.remove(cls);
-            });
-            const categoryClass = categoryMap[category as keyof typeof categoryMap];
-            if (categoryClass) {
-                categoryElement.classList.add(categoryClass);
-            }
+        Object.values(categoryMap).forEach(cls => {
+            categoryElement!.classList.remove(cls);
+        });
+        const categoryClass = categoryMap[category as keyof typeof categoryMap];
+        if (categoryClass) {
+            categoryElement.classList.add(categoryClass);
         }
+    }
 
     protected set image(src: string) {
         this.setImage(this.imageElement, CDN_URL + src.replace('.svg', '.png'));
